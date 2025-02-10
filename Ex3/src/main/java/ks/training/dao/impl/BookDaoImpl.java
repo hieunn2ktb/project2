@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookDaoImpl implements BookDAO {
 
@@ -81,5 +83,27 @@ public class BookDaoImpl implements BookDAO {
             e.printStackTrace();
         }
         return (result > 0 ? "Success" : "Failed");
+    }
+
+    @Override
+    public List<Book> findAll() throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_ALL_BOOK)) {
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Book book = new Book();
+                book.setId(rs.getInt(1));
+                book.setName(rs.getString(2));
+                book.setAuthor(rs.getString(3));
+                book.setStatus(rs.getBoolean(4));
+                book.setQuantity(rs.getInt(5));
+                books.add(book);
+            }
+        } catch (SQLException e) {
+
+            e.printStackTrace();
+        }
+        return books;
     }
 }

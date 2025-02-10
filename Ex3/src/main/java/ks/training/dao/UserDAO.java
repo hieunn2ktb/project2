@@ -11,4 +11,6 @@ public interface UserDAO {
     List<User> findAll(int id) throws SQLException;
 
     String delete(int id, String name) throws SQLException;
+    boolean isUserExisted(String username,String password) throws SQLException;
+     boolean isAdmin(String username) throws SQLException;
 }

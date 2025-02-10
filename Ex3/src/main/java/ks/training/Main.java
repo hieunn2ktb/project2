@@ -1,6 +1,9 @@
 package ks.training;
 
-import ks.training.view.CounterView;
+import ks.training.view.BookManagementView;
+import ks.training.view.LibraryManagementUI;
+
+import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,7 +14,6 @@ public class Main {
 //        System.out.println(ct.getValue());
 //        ct.decrement();
 //        System.out.println(ct.getValue());
-       CounterView cv = new CounterView();
 //        BookDAO bookDAO = new BookDaoImpl();
 //        Book book = new Book("Java", "Sachin", 10);
 //        try {
@@ -26,5 +28,11 @@ public class Main {
 //        } catch (SQLException e) {
 //            e.printStackTrace();
 //        }
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            new BookManagementView();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

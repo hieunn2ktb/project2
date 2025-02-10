@@ -14,27 +14,29 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
-    private boolean isUserExisted(int id) throws SQLException {
+    public boolean isUserExisted(String username,String password) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.COUNT_USER)) {
-            pstmt.setInt(1, id);
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }
         }
     }
 
-    private boolean isAdmin(int userId) throws SQLException {
+    public boolean isAdmin(String username) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.CHECK_IF_ADMIN)) {
-            pstmt.setInt(1, userId);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                String roleName = rs.getString("role_name");
-                if ("Admin".equalsIgnoreCase(roleName)) {
-                    return true;
-                }
+             PreparedStatement stmt = conn.prepareStatement(SqlConstants.CHECK_IF_ADMIN)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -79,11 +81,6 @@ public class UserDAOImpl implements UserDAO {
     public List<User> findAll(int userId) throws SQLException {
         List<User> users = new ArrayList<>();
 
-        if (!isAdmin(userId)) {
-            System.out.println("You do not have sufficient access rights.");
-            return users;
-        }
-
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_ALL_USERS);
              ResultSet rs = pstmt.executeQuery()) {
@@ -101,10 +98,6 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public String delete(int userId, String name) throws SQLException {
-        if (!isAdmin(userId)) {
-            return "You do not have sufficient access rights.";
-        }
-
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement deleteStmt = conn.prepareStatement(SqlConstants.DELETE_USER)) {
             deleteStmt.setInt(1, userId);
