@@ -23,14 +23,14 @@ public class BookManagementView extends JFrame {
     public JTextField textFieldAddName;
     public JTextField textField_3;
     public JTextField textField_4;
-    private JButton btnPrev, btnNext;
+    public JButton btnPrev, btnNext;
     public BookManagement bookManagement;
     private int currentPage = 1;
     private int itemsPerPage = 15;
-    DefaultTableModel model;
-    private UserDAO userDAO;
-    private String currentUser;
-    private int userId;
+    public DefaultTableModel model;
+    public UserDAO userDAO;
+    public String currentUser;
+    public int userId;
 
     public BookManagementView() {
         this.bookManagement = new BookManagement();
@@ -166,6 +166,7 @@ public class BookManagementView extends JFrame {
         JMenuItem mntmNewMenuItem_1 = new JMenuItem("User");
         mnNewMenu.add(mntmNewMenuItem_1);
         getContentPane().setLayout(null);
+
 
         Box verticalBox = Box.createVerticalBox();
         verticalBox.setBounds(0, 0, 1, 1);
