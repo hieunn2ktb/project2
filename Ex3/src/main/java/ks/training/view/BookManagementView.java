@@ -1,6 +1,7 @@
 package ks.training.view;
 
 import ks.training.controller.BookManagementController;
+import ks.training.model.Book;
 import ks.training.service.BookManagement;
 
 import javax.swing.*;
@@ -8,17 +9,18 @@ import java.awt.Font;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 public class BookManagementView extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JTextField textField;
-	private JTextField textField_1;
-	private JTable table;
-	private JTextField textField_2;
-	private JTextField textField_3;
-	private JTextField textField_4;
-	private BookManagement bookManagement;
+	public JTextField textField;
+	public JTextField textField_1;
+	public JTable table;
+	public JTextField textField_2;
+	public JTextField textField_3;
+	public JTextField textField_4;
+	public BookManagement bookManagement;
 
 	public BookManagementView() {
 		this.bookManagement = new BookManagement();
@@ -108,6 +110,7 @@ public class BookManagementView extends JFrame {
 				"ID", "Name", "Author", "Quantity"
 			}
 		));
+
 		
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBounds(22, 147, 774, 267);
@@ -117,10 +120,10 @@ public class BookManagementView extends JFrame {
 		separator_1.setBounds(22, 424, 764, 8);
 		getContentPane().add(separator_1);
 		
-		JLabel lblThmSchVo = new JLabel("Thêm sách vào thư viện");
-		lblThmSchVo.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblThmSchVo.setBounds(22, 424, 172, 56);
-		getContentPane().add(lblThmSchVo);
+		JLabel lblAddBook = new JLabel("Thêm sách vào thư viện");
+		lblAddBook.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		lblAddBook.setBounds(22, 424, 172, 56);
+		getContentPane().add(lblAddBook);
 		
 		JLabel LabelName_1 = new JLabel("Name");
 		LabelName_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -183,5 +186,9 @@ public class BookManagementView extends JFrame {
 		getContentPane().add(btnExportFileExcel);
 
 		this.setVisible(true);
+	}
+
+	public void addBook(Book book) throws SQLException {
+		bookManagement.addBook(book);
 	}
 }

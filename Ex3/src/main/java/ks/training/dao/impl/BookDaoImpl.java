@@ -16,10 +16,11 @@ import java.util.List;
 
 public class BookDaoImpl implements BookDAO {
 
-    private boolean isBookIdExisted(int id) {
+    private boolean isBookIdExisted(String name, String author) {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.COUNT_BOOK)) {
-            pstmt.setInt(1, id);
+            pstmt.setString(1, name);
+            pstmt.setString(2, author);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next() && rs.getInt(1) > 0) {
                 return true;
@@ -33,17 +34,34 @@ public class BookDaoImpl implements BookDAO {
     @Override
     public String save(Book book) throws SQLException {
         int result = 0;
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT)) {
-            pstmt.setString(1, book.getName());
-            pstmt.setString(2, book.getAuthor());
-            pstmt.setFloat(3, book.getQuantity());
-            result = pstmt.executeUpdate();
-        } catch (SQLException e) {
+        if (isBookIdExisted(book.getName(), book.getAuthor())) {
+            updateQuantity(book.getName(), book.getQuantity(), book.getAuthor());
+        } else {
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT)) {
+                pstmt.setString(1, book.getName());
+                pstmt.setString(2, book.getAuthor());
+                pstmt.setFloat(3, book.getQuantity());
+                result = pstmt.executeUpdate();
+            } catch (SQLException e) {
 
-            e.printStackTrace();
+                e.printStackTrace();
+            }
         }
         return (result > 0 ? "Success" : "Failed");
+    }
+
+    private void updateQuantity(String name, int additionalQuantity, String author) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SqlConstants.UPDATE_QUANTITY)) {
+
+            stmt.setInt(1, additionalQuantity);
+            stmt.setString(2, name);
+            stmt.setString(3, author);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -72,9 +90,6 @@ public class BookDaoImpl implements BookDAO {
     @Override
     public String delete(Book book) throws SQLException {
         int result = 0;
-        if (isBookIdExisted(book.getId())) {
-            throw new RecordNotFoundException("Order with id = " + book.getId() + " does not exist");
-        }
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.DELETE)) {
             pstmt.setInt(1, book.getId());
