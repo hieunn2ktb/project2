@@ -7,6 +7,13 @@ public class Book {
     private boolean status;
     private int quantity;
 
+    public Book(int id, String name, String author, int quantity) {
+        this.id = id;
+        this.name = name;
+        this.author = author;
+        this.quantity = quantity;
+    }
+
     public Book(String name, String author, boolean status, int quantity, int id) {
         this.name = name;
         this.author = author;
@@ -23,6 +30,7 @@ public class Book {
 
     public Book() {
     }
+
 
     public int getId() {
         return id;

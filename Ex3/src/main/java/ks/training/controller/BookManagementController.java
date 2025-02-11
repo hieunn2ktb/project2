@@ -49,14 +49,36 @@ public class BookManagementController implements Action {
         String action = e.getActionCommand();
         if (action.equals("Thêm Vào Thư Viện")){
             try {
-                String name = this.bookManagementView.textField_2.getText();
+                String name = this.bookManagementView.textFieldAddName.getText();
                 String author = this.bookManagementView.textField_3.getText();
-                int quantity = Integer.parseInt(this.bookManagementView.textField_4.getText());
+                String result = this.bookManagementView.textField_4.getText();
+                if (name.isEmpty() || author.isEmpty() || result.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Please enter all information!");
+                    return;
+                }
+                int quantity = Integer.parseInt(result);
                 Book book = new Book(name,author,quantity);
                 this.bookManagementView.addBook(book);
+                JOptionPane.showMessageDialog(null, "Add book successfully!");
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        } else if (action.equals("Xoá Sách")) {
+            try {
+                this.bookManagementView.deleteBook();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        } else if (action.equals("Tìm Kiếm")) {
+            this.bookManagementView.searchBook();
+        }
+        else if (action.equals("Mượn Sách")) {
+            try {
+                this.bookManagementView.borrowBook();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         }
+
     }
 }

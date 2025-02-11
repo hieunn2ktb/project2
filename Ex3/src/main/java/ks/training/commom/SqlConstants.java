@@ -3,8 +3,10 @@ package ks.training.commom;
 public class SqlConstants {
     public static final String INSERT = "INSERT INTO book (name, author, quantity) VALUES(?,?,?)";
     public static final String COUNT_BOOK = "SELECT COUNT(*) from book where name = ? and author = ?";
-    public static final String UPDATE_QUANTITY = "UPDATE book SET quantity = quantity + ? WHERE name = ? and author = ?";
+    public static final String UPDATE_QUANTITY = "UPDATE book SET quantity = quantity + ? WHERE id = ?";
+    public static final String SELECT_ID_UPDATE_QUANTITY = "SELECT id FROM book WHERE name = ? AND author = ? LIMIT 1";
     public static final String DELETE = "DELETE FROM book WHERE id = ? AND status = 0";
+    public static final String SHOW_BOOK_BY_NAME_AND_AUTHOR = "SELECT * FROM book WHERE name = ? and author = ?";
     public static final String SHOW_BOOK_BY_NAME = "SELECT * FROM book WHERE name = ?";
     public static final String COUNT_USER = "SELECT COUNT(id) FROM users WHERE username = ? and password = ?;";
     public static final String INSERT_USER = "INSERT INTO users (username, password) VALUES(?,?)";
@@ -17,7 +19,8 @@ public class SqlConstants {
             "            JOIN users u ON ur.user_id = u.id\n" +
             "            WHERE u.username = ? AND r.role_name = 'admin';\n";
     public static final String CHECK_IF_USER = "SELECT ";
-    public static final String FIND_ALL_BOOK = "SELECT * FROM book";
+    public static final String FIND_ALL_BOOK = "Select * from book";
 
+    public static final String FIND_USER = "SELECT id From users where username = ? and password = ?";
 }
 

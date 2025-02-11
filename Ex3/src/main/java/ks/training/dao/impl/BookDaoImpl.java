@@ -7,6 +7,7 @@ import ks.training.exception.RecordNotFoundException;
 import ks.training.model.Book;
 import ks.training.util.DatabaseConnection;
 
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -51,40 +52,78 @@ public class BookDaoImpl implements BookDAO {
         return (result > 0 ? "Success" : "Failed");
     }
 
+
     private void updateQuantity(String name, int additionalQuantity, String author) {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SqlConstants.UPDATE_QUANTITY)) {
+             PreparedStatement selectStmt = conn.prepareStatement(SqlConstants.SELECT_ID_UPDATE_QUANTITY);
+             PreparedStatement updateStmt = conn.prepareStatement(SqlConstants.UPDATE_QUANTITY)) {
 
-            stmt.setInt(1, additionalQuantity);
-            stmt.setString(2, name);
-            stmt.setString(3, author);
+            selectStmt.setString(1, name);
+            selectStmt.setString(2, author);
+
+            try (ResultSet rs = selectStmt.executeQuery()) {
+                if (rs.next()) {
+                    int bookId = rs.getInt("id");
+
+                    updateStmt.setInt(1, additionalQuantity);
+                    updateStmt.setInt(2, bookId);
+
+                    updateStmt.executeUpdate();
+                } else {
+                    throw new RecordNotFoundException("Không tìm thấy sách bản nào.");
+                }
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-
     @Override
-    public Book findByName(String name) throws SQLException {
-        Book book = new Book();
+    public List<Book> findByNameAndAuthor(String name, String author) throws SQLException {
+        List<Book> books = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.SHOW_BOOK_BY_NAME)) {
+             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.SHOW_BOOK_BY_NAME_AND_AUTHOR)) {
             pstmt.setString(1, name);
+            pstmt.setString(2, author);
             ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
+            while (rs.next()) {
+                Book book = new Book();
                 book.setId(rs.getInt(1));
                 book.setName(rs.getString(2));
                 book.setAuthor(rs.getString(3));
                 book.setStatus(rs.getBoolean(4));
                 book.setQuantity(rs.getInt(5));
-                return book;
+                books.add(book);
             }
         } catch (SQLException e) {
 
             e.printStackTrace();
         }
-        return null;
+        return books;
+    }
+
+
+    @Override
+    public List<Book> findByName(String name) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.SHOW_BOOK_BY_NAME)) {
+            pstmt.setString(1, name);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Book book = new Book();
+                book.setId(rs.getInt(1));
+                book.setName(rs.getString(2));
+                book.setAuthor(rs.getString(3));
+                book.setStatus(rs.getBoolean(4));
+                book.setQuantity(rs.getInt(5));
+                books.add(book);
+            }
+        } catch (SQLException e) {
+
+            e.printStackTrace();
+        }
+        return books;
     }
 
     @Override
@@ -106,7 +145,7 @@ public class BookDaoImpl implements BookDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_ALL_BOOK)) {
             ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
+            while (rs.next()) {
                 Book book = new Book();
                 book.setId(rs.getInt(1));
                 book.setName(rs.getString(2));

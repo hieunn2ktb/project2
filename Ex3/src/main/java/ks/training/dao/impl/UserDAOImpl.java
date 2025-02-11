@@ -2,6 +2,7 @@ package ks.training.dao.impl;
 
 import ks.training.commom.SqlConstants;
 import ks.training.dao.UserDAO;
+import ks.training.model.Book;
 import ks.training.model.User;
 import ks.training.util.DatabaseConnection;
 
@@ -23,6 +24,20 @@ public class UserDAOImpl implements UserDAO {
                 return rs.next() && rs.getInt(1) > 0;
             }
         }
+    }
+
+    public int findIDUser(String username,String password) throws SQLException {
+        int id = 0;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_USER)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+               id = rs.getInt(1);
+            }
+        }
+        return id;
     }
 
     public boolean isAdmin(String username) throws SQLException {

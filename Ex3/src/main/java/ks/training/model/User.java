@@ -7,6 +7,7 @@ public class User {
     private String username;
     private String password;
     private List<Role> role;
+    private List<Book> books;
 
     public List<Role> getRole() {
         return role;
@@ -31,6 +32,13 @@ public class User {
         this.role = role;
     }
 
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
     public int getId() {
         return id;
     }
