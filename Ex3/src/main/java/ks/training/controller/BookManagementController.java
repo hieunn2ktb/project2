@@ -49,20 +49,11 @@ public class BookManagementController implements Action {
         String action = e.getActionCommand();
         if (action.equals("Thêm Vào Thư Viện")){
             try {
-                String name = this.bookManagementView.textFieldAddName.getText();
-                String author = this.bookManagementView.textField_3.getText();
-                String result = this.bookManagementView.textField_4.getText();
-                if (name.isEmpty() || author.isEmpty() || result.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Please enter all information!");
-                    return;
-                }
-                int quantity = Integer.parseInt(result);
-                Book book = new Book(name,author,quantity);
-                this.bookManagementView.addBook(book);
-                JOptionPane.showMessageDialog(null, "Add book successfully!");
+                this.bookManagementView.addBook();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
+
         } else if (action.equals("Xoá Sách")) {
             try {
                 this.bookManagementView.deleteBook();
@@ -78,6 +69,8 @@ public class BookManagementController implements Action {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
+        } else if (action.equals("Trả Sách")) {
+            this.bookManagementView.actionPerformed();
         }
 
     }

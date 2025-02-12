@@ -73,7 +73,7 @@ public class BorrowDaoImpl implements BorrowDao {
     }
     public boolean returnBook(int userId, int bookId) throws SQLException {
         Connection conn = DatabaseConnection.getConnection();
-        String returnSQL = "UPDATE borrow SET return_date = CURDATE() WHERE user_id = ? AND book_id = ? AND return_date IS NULL";
+        String returnSQL = "UPDATE borrow SET return_date = CURDATE() WHERE user_id = ? AND book_id = ? AND return_date IS NULL ORDER BY borrow_date ASC LIMIT 1";
         String updateBookSQL = "UPDATE book SET quantity = quantity + 1 WHERE id = ?";
 
         try (PreparedStatement returnStmt = conn.prepareStatement(returnSQL);
@@ -136,13 +136,49 @@ public class BorrowDaoImpl implements BorrowDao {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
+                int id = rs.getInt("id");
                 String name = rs.getString("name");
                 String author = rs.getString("author");
-                borrowedBooks.add(new Book(name, author));
+                borrowedBooks.add(new Book(id,name, author));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return borrowedBooks;
     }
+
+    public List<BorrowDetail> searchBorrowHistory(LocalDate startDate, LocalDate endDate) throws SQLException {
+        List<BorrowDetail> records = new ArrayList<>();
+        String sql = "SELECT b.id, u.id AS user_id, u.username AS user_name, \n" +
+                "       bk.id AS book_id, bk.name AS book_name, bk.author AS author, \n" +
+                "       b.borrow_date, b.return_date\n" +
+                "FROM borrow b\n" +
+                "JOIN users u ON b.user_id = u.id\n" +
+                "JOIN book bk ON b.book_id = bk.id\n" +
+                "WHERE b.borrow_date BETWEEN ? AND ?\n" +
+                "ORDER BY b.borrow_date ASC;\n";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDate(1, java.sql.Date.valueOf(startDate));
+            stmt.setDate(2, java.sql.Date.valueOf(endDate));
+
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next()) {
+                int borrowId = resultSet.getInt("id");
+                int userId = resultSet.getInt("user_id");
+                String userName = resultSet.getString("user_name");
+                int bookId = resultSet.getInt("book_id");
+                String bookName = resultSet.getString("book_name");
+                String author = resultSet.getString("author");
+                LocalDate borrowDate = resultSet.getDate("borrow_date").toLocalDate();
+                LocalDate returnDate = resultSet.getDate("return_date") != null ? resultSet.getDate("return_date").toLocalDate() : null;
+                BorrowDetail record = new BorrowDetail(borrowId, userId, userName, bookId, bookName, author, borrowDate, returnDate);
+                records.add(record);
+            }
+        }
+        return records;
+    }
+
 }

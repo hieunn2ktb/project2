@@ -14,6 +14,9 @@ public class AdminManagementController implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        String action = e.getActionCommand();
+        if (action.equals("Tìm Kiếm")){
+            this.adminView.searchUserByBorrowDay();
+        }
     }
 }

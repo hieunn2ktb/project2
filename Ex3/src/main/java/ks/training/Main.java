@@ -10,9 +10,10 @@ public class Main {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            //new BookManagementView();
+            new BookManagementView();
+
             //new UserManagementView();
-            new AdminView();
+           // new AdminView();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

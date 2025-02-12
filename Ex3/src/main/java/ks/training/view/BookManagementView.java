@@ -3,7 +3,8 @@ package ks.training.view;
 import ks.training.controller.BookManagementController;
 import ks.training.dao.UserDAO;
 import ks.training.dao.impl.UserDAOImpl;
-import ks.training.exception.RecordNotFoundException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ks.training.model.Book;
 import ks.training.model.User;
 import ks.training.service.BookManagement;
@@ -11,32 +12,39 @@ import ks.training.service.BookManagement;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
 public class BookManagementView extends JFrame {
 
     private static final long serialVersionUID = 1L;
-    public JTextField textFieldSearchName;
-    public JTextField textFieldSearchAuthor;
-    public JTable table;
-    public JTextField textFieldAddName;
-    public JTextField textField_3;
-    public JTextField textField_4;
-    public JButton btnPrev, btnNext;
-    public BookManagement bookManagement;
+    private JTextField textFieldSearchName;
+    private JTextField textFieldSearchAuthor;
+    private JTable table;
+    private JTextField textFieldAddName;
+    private JTextField textField_3;
+    private JTextField textField_4;
+    private JButton btnPrev, btnNext;
+    private BookManagement bookManagement;
     private int currentPage = 1;
-    private int itemsPerPage = 15;
-    public DefaultTableModel model;
-    public UserDAO userDAO;
-    public String currentUser;
-    public int userId;
+    private final int itemsPerPage = 15;
+    private DefaultTableModel model;
+    private UserDAO userDAO;
+    private String currentUser;
+    private int userId;
+
 
 
     public BookManagementView() {
         this.bookManagement = new BookManagement();
         this.userDAO = new UserDAOImpl();
-        //init();
         showLoginScreen();
     }
 
@@ -92,6 +100,9 @@ public class BookManagementView extends JFrame {
         });
 
         registerButton.addActionListener(e -> showRegisterScreen());
+    }
+    public int getUserId() {
+        return userId;
     }
     private void showRegisterScreen() {
         JFrame registerFrame = new JFrame("Register");
@@ -157,15 +168,26 @@ public class BookManagementView extends JFrame {
 
         JMenuItem mntmNewMenuItem = new JMenuItem("Logout");
         mnNewMenu.add(mntmNewMenuItem);
+        mntmNewMenuItem.addActionListener(e -> {
+            this.dispose();
+            showLoginScreen();
+        });
 
-        JMenuItem mntmMenuItemBook = new JMenuItem("Book");
-        mnNewMenu.add(mntmMenuItemBook);
 
-        JMenuItem mntmMenuItemBrou = new JMenuItem("Book Management");
+        JMenuItem mntmMenuItemBrou = new JMenuItem("Admin");
+        if (!"Admin".equals(currentUser)){
+            mntmMenuItemBrou.setVisible(false);
+        }
         mnNewMenu.add(mntmMenuItemBrou);
+        mntmMenuItemBrou.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new UserManagementView();
+            }
+        });
 
-        JMenuItem mntmNewMenuItem_1 = new JMenuItem("User");
-        mnNewMenu.add(mntmNewMenuItem_1);
+
+
         getContentPane().setLayout(null);
 
 
@@ -312,6 +334,20 @@ public class BookManagementView extends JFrame {
         btnExportFileExcel.setFont(new Font("Tahoma", Font.PLAIN, 15));
         btnExportFileExcel.setBounds(32, 595, 172, 46);
         getContentPane().add(btnExportFileExcel);
+        btnExportFileExcel.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+            fileChooser.setSelectedFile(new File("danh_sach_muon_sach.xlsx"));
+
+            int userSelection = fileChooser.showSaveDialog(null);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!filePath.endsWith(".xlsx")) {
+                    filePath += ".xlsx"; // Đảm bảo file có đuôi .xlsx
+                }
+                exportToExcel(table, filePath);
+            }
+        });
 
         try {
             updateTable();
@@ -322,9 +358,23 @@ public class BookManagementView extends JFrame {
         this.setVisible(true);
     }
 
-    public void addBook(Book book) throws SQLException {
-        bookManagement.addBook(book);
-        updateTable();
+    public void addBook() throws SQLException {
+        try {
+            String name = this.textFieldAddName.getText();
+            String author = this.textField_3.getText();
+            String result = this.textField_4.getText();
+            if (name.isEmpty() || author.isEmpty() || result.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Please enter all information!");
+                return;
+            }
+            int quantity = Integer.parseInt(result);
+            Book book = new Book(name,author,quantity);
+            bookManagement.addBook(book);
+            updateTable();
+            JOptionPane.showMessageDialog(null, "Add book successfully!");
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void updateTable() throws SQLException {
@@ -423,4 +473,40 @@ public class BookManagementView extends JFrame {
 
         }
     }
+    public void actionPerformed() {
+        new UserReturnBookView(userId).setVisible(true);
+    }
+
+    public static void exportToExcel(JTable table, String filePath) {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Data");
+
+        TableModel model = table.getModel();
+
+        // Ghi tiêu đề cột
+        Row headerRow = sheet.createRow(0);
+        for (int col = 0; col < model.getColumnCount(); col++) {
+            Cell cell = headerRow.createCell(col);
+            cell.setCellValue(model.getColumnName(col));
+        }
+
+        // Ghi dữ liệu từ JTable
+        for (int row = 0; row < model.getRowCount(); row++) {
+            Row excelRow = sheet.createRow(row + 1);
+            for (int col = 0; col < model.getColumnCount(); col++) {
+                Cell cell = excelRow.createCell(col);
+                cell.setCellValue(model.getValueAt(row, col).toString());
+            }
+        }
+
+        // Lưu file Excel
+        try (FileOutputStream fileOut = new FileOutputStream(new File(filePath))) {
+            workbook.write(fileOut);
+            workbook.close();
+            JOptionPane.showMessageDialog(null, "Xuất file Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Lỗi khi xuất file Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 }

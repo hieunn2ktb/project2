@@ -5,6 +5,7 @@ import ks.training.model.User;
 import ks.training.service.UserManagement;
 
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
@@ -31,7 +32,7 @@ public class UserManagementView extends JFrame {
 	}
 
     private void init() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 827, 553);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -42,20 +43,7 @@ public class UserManagementView extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu mnNewMenu = new JMenu("file");
-        menuBar.add(mnNewMenu);
 
-        JMenuItem mntmNewMenuItem = new JMenuItem("Logout");
-        mnNewMenu.add(mntmNewMenuItem);
-
-        JMenuItem mntmMenuItemBook = new JMenuItem("Book");
-        mnNewMenu.add(mntmMenuItemBook);
-
-        JMenuItem mntmMenuItemBrou = new JMenuItem("Book Management");
-        mnNewMenu.add(mntmMenuItemBrou);
-
-        JMenuItem mntmNewMenuItem_1 = new JMenuItem("User");
-        mnNewMenu.add(mntmNewMenuItem_1);
         getContentPane().setLayout(null);
 
 
@@ -84,7 +72,13 @@ public class UserManagementView extends JFrame {
         btnDeleteUser = new JButton("Xoá User");
         btnDeleteUser.addActionListener(action);
         btnDeleteUser.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        btnDeleteUser.setBounds(302, 408, 172, 46);
+        btnDeleteUser.setBounds(146, 408, 172, 46);
+        getContentPane().add(btnDeleteUser);
+
+        btnDeleteUser = new JButton("Danh Sách User Mượn Sách");
+        btnDeleteUser.addActionListener(action);
+        btnDeleteUser.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        btnDeleteUser.setBounds(509, 408, 232, 46);
         getContentPane().add(btnDeleteUser);
 
         try {
@@ -139,7 +133,6 @@ public class UserManagementView extends JFrame {
             }else {
                 JOptionPane.showMessageDialog(this, "Không thể xoá User đang mượn sách", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
-
 
         }
     }

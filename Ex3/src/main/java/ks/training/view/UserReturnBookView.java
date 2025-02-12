@@ -1,26 +1,18 @@
 package ks.training.view;
 
+import ks.training.controller.UserReturnBookController;
 import ks.training.model.Book;
 import ks.training.model.BorrowDetail;
 import ks.training.service.AdminManagement;
 
-import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JDesktopPane;
 
 public class UserReturnBookView extends JFrame {
 
@@ -32,20 +24,22 @@ public class UserReturnBookView extends JFrame {
     private AdminManagement adminManagement;
     public int currentPage = 1;
     public int itemsPerPage = 15;
+    private int userId;
 
 
-	public UserReturnBookView() {
+	public UserReturnBookView(int userId) {
+        this.userId = userId;
         this.adminManagement = new AdminManagement();
 		init();
 	}
 
     private void init() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+       // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 827, 553);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        //Action action = new BookManagementController(this);
+        ActionListener action = new UserReturnBookController(this);
 
         setContentPane(contentPane);
         JMenuBar menuBar = new JMenuBar();
@@ -73,7 +67,7 @@ public class UserReturnBookView extends JFrame {
         labelListBookBorrow.setBounds(27, 11, 160, 56);
         getContentPane().add(labelListBookBorrow);
 
-        model = new DefaultTableModel(new String[]{"ID", "Name", "Author", "Quantity"}, 0);
+        model = new DefaultTableModel(new String[]{"ID", "Name", "Author"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBounds(27, 59, 774, 267);
@@ -106,6 +100,14 @@ public class UserReturnBookView extends JFrame {
         btnReturnBook.setFont(new Font("Tahoma", Font.PLAIN, 15));
         btnReturnBook.setBounds(302, 408, 172, 46);
         getContentPane().add(btnReturnBook);
+
+        try {
+            updateTable();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sách!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+        this.setVisible(true);
     }
 
     private void previousPage() throws SQLException {
@@ -117,22 +119,30 @@ public class UserReturnBookView extends JFrame {
     }
 
 	private void nextPage() throws SQLException {
-        List<Book> books = adminManagement.listBook();
+        List<Book> books = adminManagement.listBook(userId);
         if (currentPage * itemsPerPage < books.size()) {
             currentPage++;
             updateTable();
         }
     }
     private void updateTable() throws SQLException {
-        List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
+        List<Book> books = adminManagement.listBook(userId);
         model.setRowCount(0);
         int start = (currentPage - 1) * itemsPerPage;
         int end = Math.min(start + itemsPerPage, books.size());
         for (int i = start; i < end; i++) {
-            BorrowDetail borrowDetail = books.get(i);
-            model.addRow(new Object[]{borrowDetail.getBorrowId(), borrowDetail.getUserName(), borrowDetail.getBookName(), borrowDetail.getAuthor(), borrowDetail.getBorrowDate(), borrowDetail.getReturnDate()});
+            Book book = books.get(i);
+            model.addRow(new Object[]{book.getId(), book.getName(), book.getAuthor()});
         }
         updateButtons();
+    }
+    public Book getBook() {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        int row = table.getSelectedRow();
+        int id = Integer.valueOf(model.getValueAt(row, 0) + "");
+        String name = model.getValueAt(row, 1) + "";
+        String author = model.getValueAt(row, 2) + "";
+        return new Book(id, name, author);
     }
 
     private void updateButtons() throws SQLException {
@@ -141,4 +151,14 @@ public class UserReturnBookView extends JFrame {
         btnNext.setEnabled(currentPage * itemsPerPage < books.size());
     }
 
+    public void returnBook() throws SQLException {
+        DefaultTableModel defaultTableModel = (DefaultTableModel) table.getModel();
+        int row = table.getSelectedRow();
+        int number = JOptionPane.showConfirmDialog(this, "Bạn có muốn trả cuốn sách này không?");
+        if (number == JOptionPane.YES_OPTION) {
+            this.adminManagement.returnBook(userId,getBook().getId());
+            defaultTableModel.removeRow(row);
+        }
+
+    }
 }

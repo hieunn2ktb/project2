@@ -1,5 +1,6 @@
 package ks.training.controller;
 
+import ks.training.view.AdminView;
 import ks.training.view.UserManagementView;
 
 import java.awt.event.ActionEvent;
@@ -26,6 +27,8 @@ public class UserManagementController implements ActionListener {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
+        } else if (action.equals("Danh Sách User Mượn Sách")) {
+             new AdminView();
         }
     }
 }
