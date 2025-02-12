@@ -9,6 +9,12 @@ public class User {
     private List<Role> role;
     private List<Book> books;
 
+    public User(int id, String username, String password) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+    }
+
     public List<Role> getRole() {
         return role;
     }

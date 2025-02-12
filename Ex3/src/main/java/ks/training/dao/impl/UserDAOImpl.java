@@ -93,13 +93,12 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public List<User> findAll(int userId) throws SQLException {
+    public List<User> findAll() throws SQLException {
         List<User> users = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_ALL_USERS);
              ResultSet rs = pstmt.executeQuery()) {
-
             while (rs.next()) {
                 User user = new User();
                 user.setId(rs.getInt("id"));
@@ -111,12 +110,37 @@ public class UserDAOImpl implements UserDAO {
         return users;
     }
 
-    @Override
-    public String delete(int userId, String name) throws SQLException {
+    public boolean isUserBorrowingBook(int userId) {
+        String query = "SELECT COUNT(*) FROM borrow WHERE user_id = ? AND return_date IS NULL";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement deleteStmt = conn.prepareStatement(SqlConstants.DELETE_USER)) {
-            deleteStmt.setInt(1, userId);
-            return deleteStmt.executeUpdate() > 0 ? "Success" : "Failed";
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
+    }
+
+    @Override
+    public void delete(int userId) throws SQLException {
+        try (Connection conn = DatabaseConnection.getConnection();
+             ) {
+
+            try (PreparedStatement statement = conn.prepareStatement(SqlConstants.DELETE_USER_ROLES_SQL)) {
+                statement.setInt(1, userId);
+                statement.executeUpdate();
+            }
+
+            // 2. Xóa user trong bảng users
+            try (PreparedStatement deleteStmt = conn.prepareStatement(SqlConstants.DELETE_USER)) {
+                deleteStmt.setInt(1, userId);
+                deleteStmt.executeUpdate();
+            }
+        }
+
     }
 }

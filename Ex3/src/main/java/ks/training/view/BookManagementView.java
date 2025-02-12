@@ -32,6 +32,7 @@ public class BookManagementView extends JFrame {
     public String currentUser;
     public int userId;
 
+
     public BookManagementView() {
         this.bookManagement = new BookManagement();
         this.userDAO = new UserDAOImpl();
@@ -312,13 +313,13 @@ public class BookManagementView extends JFrame {
         btnExportFileExcel.setBounds(32, 595, 172, 46);
         getContentPane().add(btnExportFileExcel);
 
-        this.setVisible(true);
         try {
             updateTable();
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sách!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+        this.setVisible(true);
     }
 
     public void addBook(Book book) throws SQLException {

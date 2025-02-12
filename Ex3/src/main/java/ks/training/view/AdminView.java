@@ -1,60 +1,48 @@
 package ks.training.view;
 
+import ks.training.controller.AdminManagementController;
+import ks.training.model.Book;
+import ks.training.model.BorrowDetail;
+import ks.training.service.AdminManagement;
+
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 public class AdminView extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	DefaultTableModel model;
-	public JTable table;
-	private JButton btnPrev, btnNext, btnDeleteUser;
-	public JTextField textFieldSearchName;
+    public static final long serialVersionUID = 1L;
+    public JPanel contentPane;
+    DefaultTableModel model;
+    public JTable table;
+    public JButton btnPrev, btnNext, btnDeleteUser;
+    public JTextField textFieldSearchName;
+    public AdminManagement adminManagement;
+    public int currentPage = 1;
+    public int itemsPerPage = 15;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					AdminView frame = new AdminView();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
-	/**
-	 * Create the frame.
-	 */
-	public AdminView() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 827, 553);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
-		//Action action = new BookManagementController(this);
+    public AdminView() {
+        this.adminManagement = new AdminManagement();
+        init();
+    }
 
-		setContentPane(contentPane);
-		JMenuBar menuBar = new JMenuBar();
+    private void init() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 827, 553);
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+        ActionListener action = new AdminManagementController(this);
+
+        setContentPane(contentPane);
+        JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
         JMenu mnNewMenu = new JMenu("file");
@@ -72,7 +60,7 @@ public class AdminView extends JFrame {
         JMenuItem mntmNewMenuItem_1 = new JMenuItem("User");
         mnNewMenu.add(mntmNewMenuItem_1);
         getContentPane().setLayout(null);
-        
+
         textFieldSearchName = new JTextField();
         textFieldSearchName.setBounds(149, 32, 256, 46);
         getContentPane().add(textFieldSearchName);
@@ -83,13 +71,13 @@ public class AdminView extends JFrame {
         btnNewSearch.setFont(new Font("Tahoma", Font.PLAIN, 15));
         btnNewSearch.setBounds(493, 30, 102, 46);
         getContentPane().add(btnNewSearch);
-        
+
         JLabel labelListUserBorrow = new JLabel("Danh Sách User Mượn Sách");
         labelListUserBorrow.setFont(new Font("Tahoma", Font.PLAIN, 15));
         labelListUserBorrow.setBounds(27, 67, 213, 56);
         getContentPane().add(labelListUserBorrow);
 
-        model = new DefaultTableModel(new String[]{"ID", "Name", "Author", "Quantity"}, 0);
+        model = new DefaultTableModel(new String[]{"Borrow Id", "User Name", "Book Name", "Author","Borrow Date","Return Date"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBounds(27, 115, 774, 267);
@@ -116,26 +104,46 @@ public class AdminView extends JFrame {
             }
         });
         getContentPane().add(btnNext);
-        
-        btnDeleteUser = new JButton("Xoá User");
-        btnDeleteUser.addActionListener(action);
-        btnDeleteUser.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        btnDeleteUser.setBounds(301, 437, 172, 46);
-        getContentPane().add(btnDeleteUser);
-	}
-	private void previousPage() throws SQLException {
 
+        try {
+            updateTable();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sách!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+        this.setVisible(true);
+    }
+
+    private void previousPage() throws SQLException {
         if (currentPage > 1) {
             currentPage--;
             updateTable();
         }
     }
-	private void nextPage() throws SQLException {
-        List<Book> books = bookManagement.findAll();
+
+    private void nextPage() throws SQLException {
+        List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
         if (currentPage * itemsPerPage < books.size()) {
             currentPage++;
             updateTable();
         }
+    }
+    private void updateTable() throws SQLException {
+        List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
+        model.setRowCount(0);
+        int start = (currentPage - 1) * itemsPerPage;
+        int end = Math.min(start + itemsPerPage, books.size());
+        for (int i = start; i < end; i++) {
+            BorrowDetail borrowDetail = books.get(i);
+            model.addRow(new Object[]{borrowDetail.getBorrowId(), borrowDetail.getUserName(), borrowDetail.getBookName(), borrowDetail.getAuthor(), borrowDetail.getBorrowDate(), borrowDetail.getReturnDate()});
+        }
+        updateButtons();
+    }
+
+    private void updateButtons() throws SQLException {
+        List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
+        btnPrev.setEnabled(currentPage > 1);
+        btnNext.setEnabled(currentPage * itemsPerPage < books.size());
     }
 
 

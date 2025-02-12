@@ -8,13 +8,14 @@ import java.util.List;
 public interface UserDAO {
     String save(User user) throws SQLException;
 
-    List<User> findAll(int id) throws SQLException;
+    List<User> findAll() throws SQLException;
 
-    String delete(int id, String name) throws SQLException;
+    void delete(int id) throws SQLException;
 
     boolean isUserExisted(String username, String password) throws SQLException;
 
     boolean isAdmin(String username) throws SQLException;
     int findIDUser(String username,String password) throws SQLException;
+    boolean isUserBorrowingBook(int userId);
 
 }

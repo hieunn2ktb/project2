@@ -14,6 +14,7 @@ public class SqlConstants {
     public static final String INSERT_USER_ROLE = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
     public static final String FIND_ALL_USERS = "SELECT * FROM users";
     public static final String DELETE_USER = "DELETE FROM users WHERE id = ?";
+    public static final String DELETE_USER_ROLES_SQL = "DELETE FROM user_roles WHERE user_id = ?";
     public static final String CHECK_IF_ADMIN = "SELECT COUNT(*) FROM user_roles ur\n" +
             "\t\tJOIN roles r ON ur.role_id = r.id\n" +
             "            JOIN users u ON ur.user_id = u.id\n" +

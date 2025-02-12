@@ -3,6 +3,7 @@ package ks.training.dao.impl;
 import ks.training.commom.SqlConstants;
 import ks.training.dao.BorrowDao;
 import ks.training.exception.RecordNotFoundException;
+import ks.training.model.Book;
 import ks.training.model.Borrow;
 import ks.training.model.BorrowDetail;
 import ks.training.util.DatabaseConnection;
@@ -94,11 +95,11 @@ public class BorrowDaoImpl implements BorrowDao {
     }
     public List<BorrowDetail> getBooksBeingBorrowed() throws SQLException {
         List<BorrowDetail> borrowDetails = new ArrayList<>();
-        String query = "SELECT b.id AS borrow_id, u.id AS user_id, u.name AS user_name, " +
+        String query = "SELECT b.id AS borrow_id, u.id AS user_id, u.username AS user_name, " +
                 "bk.id AS book_id, bk.name AS book_name, bk.author, " +
                 "b.borrow_date, b.return_date " +
                 "FROM borrow b " +
-                "JOIN user u ON b.user_id = u.id " +
+                "JOIN users u ON b.user_id = u.id " +
                 "JOIN book bk ON b.book_id = bk.id " +
                 "WHERE b.return_date IS NULL";
 
@@ -120,5 +121,28 @@ public class BorrowDaoImpl implements BorrowDao {
             }
         }
         return borrowDetails;
+    }
+    public List<Book> getBorrowedBooksByUser(int userId) {
+        List<Book> borrowedBooks = new ArrayList<>();
+        String query = "SELECT b.id, b.name, b.author, b.status, b.quantity " +
+                "FROM book b " +
+                "JOIN borrow br ON b.id = br.book_id " +
+                "WHERE br.user_id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String name = rs.getString("name");
+                String author = rs.getString("author");
+                borrowedBooks.add(new Book(name, author));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return borrowedBooks;
     }
 }

@@ -1,8 +1,13 @@
 package ks.training.view;
 
+import ks.training.model.Book;
+import ks.training.model.BorrowDetail;
+import ks.training.service.AdminManagement;
+
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,36 +29,26 @@ public class UserReturnBookView extends JFrame {
 	DefaultTableModel model;
 	public JTable table;
 	private JButton btnPrev, btnNext, btnReturnBook;
+    private AdminManagement adminManagement;
+    public int currentPage = 1;
+    public int itemsPerPage = 15;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					UserManagementView frame = new UserManagementView();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+
+	public UserReturnBookView() {
+        this.adminManagement = new AdminManagement();
+		init();
 	}
 
-	/**
-	 * Create the frame.
-	 */
-	public UserReturnBookView() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 827, 553);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
-		//Action action = new BookManagementController(this);
+    private void init() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 827, 553);
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-		setContentPane(contentPane);
-		JMenuBar menuBar = new JMenuBar();
+        //Action action = new BookManagementController(this);
+
+        setContentPane(contentPane);
+        JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
         JMenu mnNewMenu = new JMenu("file");
@@ -72,7 +67,7 @@ public class UserReturnBookView extends JFrame {
         JMenuItem mntmNewMenuItem_1 = new JMenuItem("User");
         mnNewMenu.add(mntmNewMenuItem_1);
         getContentPane().setLayout(null);
-        
+
         JLabel labelListBookBorrow = new JLabel("Sách đã được mượn");
         labelListBookBorrow.setFont(new Font("Tahoma", Font.PLAIN, 15));
         labelListBookBorrow.setBounds(27, 11, 160, 56);
@@ -105,27 +100,45 @@ public class UserReturnBookView extends JFrame {
             }
         });
         getContentPane().add(btnNext);
-        
+
         btnReturnBook = new JButton("Trả sách");
         btnReturnBook.addActionListener(action);
         btnReturnBook.setFont(new Font("Tahoma", Font.PLAIN, 15));
         btnReturnBook.setBounds(302, 408, 172, 46);
         getContentPane().add(btnReturnBook);
-        
-	}
-	private void previousPage() throws SQLException {
+    }
+
+    private void previousPage() throws SQLException {
 
         if (currentPage > 1) {
             currentPage--;
             updateTable();
         }
     }
+
 	private void nextPage() throws SQLException {
-        List<Book> books = bookManagement.findAll();
+        List<Book> books = adminManagement.listBook();
         if (currentPage * itemsPerPage < books.size()) {
             currentPage++;
             updateTable();
         }
+    }
+    private void updateTable() throws SQLException {
+        List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
+        model.setRowCount(0);
+        int start = (currentPage - 1) * itemsPerPage;
+        int end = Math.min(start + itemsPerPage, books.size());
+        for (int i = start; i < end; i++) {
+            BorrowDetail borrowDetail = books.get(i);
+            model.addRow(new Object[]{borrowDetail.getBorrowId(), borrowDetail.getUserName(), borrowDetail.getBookName(), borrowDetail.getAuthor(), borrowDetail.getBorrowDate(), borrowDetail.getReturnDate()});
+        }
+        updateButtons();
+    }
+
+    private void updateButtons() throws SQLException {
+        List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
+        btnPrev.setEnabled(currentPage > 1);
+        btnNext.setEnabled(currentPage * itemsPerPage < books.size());
     }
 
 }
