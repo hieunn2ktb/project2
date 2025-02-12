@@ -1,6 +1,5 @@
 package ks.training.controller;
 
-import ks.training.model.Book;
 import ks.training.view.BookManagementView;
 
 import javax.swing.*;
