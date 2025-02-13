@@ -134,7 +134,7 @@ public class UserReturnBookView extends JFrame {
         return new Book(id, name, author);
     }
 
-    private void updateButtons() throws SQLException {
+    private void updateButtons() {
         List<BorrowDetail> books = adminManagement.getBooksBeingBorrowed();
         btnPrev.setEnabled(currentPage > 1);
         btnNext.setEnabled(currentPage * itemsPerPage < books.size());

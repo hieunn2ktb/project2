@@ -8,7 +8,6 @@ public class SqlConstants {
     public static final String DELETE = "DELETE FROM book WHERE id = ?";
     public static final String SHOW_BOOK_BY_NAME_AND_AUTHOR = "SELECT * FROM book WHERE name = ? and author = ?";
     public static final String SHOW_BOOK_BY_NAME = "SELECT * FROM book WHERE name = ?";
-    public static final String COUNT_USER = "SELECT COUNT(id) FROM users WHERE username = ? and password = ?;";
     public static final String INSERT_USER = "INSERT INTO users (username, password) VALUES(?,?)";
     public static final String GET_ROLE_STUDENT = "SELECT id FROM roles WHERE role_name = 'Student'";
     public static final String INSERT_USER_ROLE = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
@@ -19,7 +18,6 @@ public class SqlConstants {
             "\t\tJOIN roles r ON ur.role_id = r.id\n" +
             "            JOIN users u ON ur.user_id = u.id\n" +
             "            WHERE u.username = ? AND r.role_name = 'admin';\n";
-    public static final String CHECK_IF_USER = "SELECT ";
     public static final String FIND_ALL_BOOK = "Select * from book";
 
     public static final String FIND_USER = "SELECT id From users where username = ? and password = ?";

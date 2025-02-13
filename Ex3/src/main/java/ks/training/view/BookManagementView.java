@@ -23,8 +23,8 @@ public class BookManagementView extends JFrame {
     private JTextField textFieldSearchAuthor;
     private JTable table;
     private JTextField textFieldAddName;
-    private JTextField textField_3;
-    private JTextField textField_4;
+    private JTextField textFieldAuthor;
+    private JTextField textFieldNum;
     private JButton btnPrev, btnNext;
     private BookManagement bookManagement;
     private int currentPage = 1;
@@ -152,35 +152,35 @@ public class BookManagementView extends JFrame {
         lblAddBook.setBounds(22, 424, 172, 56);
         getContentPane().add(lblAddBook);
 
-        JLabel LabelName_1 = new JLabel("Name");
-        LabelName_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        LabelName_1.setBounds(22, 471, 57, 56);
-        getContentPane().add(LabelName_1);
+        JLabel LabelNameAddBook = new JLabel("Name");
+        LabelNameAddBook.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        LabelNameAddBook.setBounds(22, 471, 57, 56);
+        getContentPane().add(LabelNameAddBook);
 
         textFieldAddName = new JTextField();
         textFieldAddName.setColumns(10);
         textFieldAddName.setBounds(89, 479, 256, 46);
         getContentPane().add(textFieldAddName);
 
-        JLabel lblAuthor_1 = new JLabel("Author");
-        lblAuthor_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        lblAuthor_1.setBounds(22, 529, 57, 56);
-        getContentPane().add(lblAuthor_1);
+        JLabel lblAuthorAddBook = new JLabel("Author");
+        lblAuthorAddBook.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        lblAuthorAddBook.setBounds(22, 529, 57, 56);
+        getContentPane().add(lblAuthorAddBook);
 
-        textField_3 = new JTextField();
-        textField_3.setColumns(10);
-        textField_3.setBounds(89, 537, 256, 46);
-        getContentPane().add(textField_3);
+        textFieldAuthor = new JTextField();
+        textFieldAuthor.setColumns(10);
+        textFieldAuthor.setBounds(89, 537, 256, 46);
+        getContentPane().add(textFieldAuthor);
 
-        JLabel LabelName_1_1 = new JLabel("Số lượng");
-        LabelName_1_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        LabelName_1_1.setBounds(410, 471, 65, 56);
-        getContentPane().add(LabelName_1_1);
+        JLabel LabelNameNum = new JLabel("Số lượng");
+        LabelNameNum.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        LabelNameNum.setBounds(410, 471, 65, 56);
+        getContentPane().add(LabelNameNum);
 
-        textField_4 = new JTextField();
-        textField_4.setColumns(10);
-        textField_4.setBounds(485, 479, 256, 46);
-        getContentPane().add(textField_4);
+        textFieldNum = new JTextField();
+        textFieldNum.setColumns(10);
+        textFieldNum.setBounds(485, 479, 256, 46);
+        getContentPane().add(textFieldNum);
 
         JButton btnAddBook = new JButton("Thêm Vào Thư Viện");
         btnAddBook.addActionListener(action);
@@ -246,8 +246,8 @@ public class BookManagementView extends JFrame {
     public void addBook() throws SQLException {
         try {
             String name = this.textFieldAddName.getText();
-            String author = this.textField_3.getText();
-            String result = this.textField_4.getText();
+            String author = this.textFieldAuthor.getText();
+            String result = this.textFieldNum.getText();
             if (name.isEmpty() || author.isEmpty() || result.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Please enter all information!");
                 return;
@@ -368,14 +368,12 @@ public class BookManagementView extends JFrame {
 
         TableModel model = table.getModel();
 
-        // Ghi tiêu đề cột
         Row headerRow = sheet.createRow(0);
         for (int col = 0; col < model.getColumnCount(); col++) {
             Cell cell = headerRow.createCell(col);
             cell.setCellValue(model.getColumnName(col));
         }
 
-        // Ghi dữ liệu từ JTable
         for (int row = 0; row < model.getRowCount(); row++) {
             Row excelRow = sheet.createRow(row + 1);
             for (int col = 0; col < model.getColumnCount(); col++) {
@@ -384,7 +382,6 @@ public class BookManagementView extends JFrame {
             }
         }
 
-        // Lưu file Excel
         try (FileOutputStream fileOut = new FileOutputStream(new File(filePath))) {
             workbook.write(fileOut);
             workbook.close();

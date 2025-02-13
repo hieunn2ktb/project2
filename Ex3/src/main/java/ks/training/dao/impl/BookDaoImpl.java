@@ -95,7 +95,7 @@ public class BookDaoImpl implements BookDAO {
         }
     }
     @Override
-    public List<Book> findByNameAndAuthor(String name, String author) throws SQLException {
+    public List<Book> findByNameAndAuthor(String name, String author) {
         List<Book> books = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.SHOW_BOOK_BY_NAME_AND_AUTHOR)) {
