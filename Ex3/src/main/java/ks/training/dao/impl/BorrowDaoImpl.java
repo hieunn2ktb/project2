@@ -74,7 +74,7 @@ public class BorrowDaoImpl implements BorrowDao {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false);
 
             String returnSQL = "UPDATE borrow SET return_date = CURDATE() WHERE user_id = ? AND book_id = ? AND return_date IS NULL ORDER BY borrow_date ASC LIMIT 1";
             String updateBookSQL = "UPDATE book SET quantity = quantity + 1 WHERE id = ?";
@@ -82,30 +82,28 @@ public class BorrowDaoImpl implements BorrowDao {
             try (PreparedStatement returnStmt = conn.prepareStatement(returnSQL);
                  PreparedStatement updateStmt = conn.prepareStatement(updateBookSQL)) {
 
-                // Cập nhật ngày trả sách trong bảng borrow
                 returnStmt.setInt(1, userId);
                 returnStmt.setInt(2, bookId);
                 int rowsAffected = returnStmt.executeUpdate();
 
                 if (rowsAffected > 0) {
-                    // Nếu có bản ghi được cập nhật, tăng số lượng sách trong bảng book
                     updateStmt.setInt(1, bookId);
                     updateStmt.executeUpdate();
-                    conn.commit(); // Commit nếu thành công
+                    conn.commit();
                 } else {
                     System.out.println("Không tìm thấy bản ghi mượn sách.");
-                    conn.rollback(); // Rollback nếu không tìm thấy bản ghi
+                    conn.rollback();
                 }
             }
         } catch (SQLException ex) {
             if (conn != null) {
-                conn.rollback(); // Rollback nếu có lỗi
+                conn.rollback();
             }
             throw ex;
         } finally {
             if (conn != null) {
                 try {
-                    conn.setAutoCommit(true); // Trả lại trạng thái mặc định
+                    conn.setAutoCommit(true);
                     conn.close(); // Đóng connection
                 } catch (SQLException e) {
                     e.printStackTrace();
