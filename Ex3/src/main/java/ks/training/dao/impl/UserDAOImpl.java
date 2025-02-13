@@ -14,7 +14,7 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
-    public int findIDUser(String username,String password) throws SQLException {
+    public int findIDUser(String username, String password) throws SQLException {
         int id = 0;
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_USER)) {
@@ -22,7 +22,7 @@ public class UserDAOImpl implements UserDAO {
             pstmt.setString(2, password);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-               id = rs.getInt(1);
+                id = rs.getInt(1);
             }
         }
         return id;
@@ -55,12 +55,10 @@ public class UserDAOImpl implements UserDAO {
                  PreparedStatement roleStmt = conn.prepareStatement(SqlConstants.GET_ROLE_STUDENT);
                  PreparedStatement userRoleStmt = conn.prepareStatement(SqlConstants.INSERT_USER_ROLE)) {
 
-                // Thêm user vào database
                 pstmt.setString(1, user.getUsername());
                 pstmt.setString(2, user.getPassword());
                 pstmt.executeUpdate(); // Quan trọng: phải gọi executeUpdate() trước khi lấy ID
 
-                // Lấy ID của user vừa tạo
                 int userId = -1;
                 try (ResultSet userRs = pstmt.getGeneratedKeys()) {
                     if (userRs.next()) {
@@ -68,7 +66,7 @@ public class UserDAOImpl implements UserDAO {
                     }
                 }
 
-                // Lấy role ID
+
                 int roleId = -1;
                 try (ResultSet roleResult = roleStmt.executeQuery()) {
                     if (roleResult.next()) {
@@ -76,30 +74,30 @@ public class UserDAOImpl implements UserDAO {
                     }
                 }
 
-                // Thêm user_role nếu userId và roleId hợp lệ
+
                 if (userId != -1 && roleId != -1) {
                     userRoleStmt.setInt(1, userId);
                     userRoleStmt.setInt(2, roleId);
                     userRoleStmt.executeUpdate();
                 }
 
-                // Commit transaction nếu mọi thứ thành công
+
                 conn.commit();
             } catch (SQLException ex) {
                 if (conn != null) {
-                    conn.rollback(); // Rollback nếu có lỗi
+                    conn.rollback();
                 }
                 throw ex;
             } finally {
                 if (conn != null) {
-                    conn.setAutoCommit(true); // Trả lại trạng thái ban đầu
+                    conn.setAutoCommit(true);
                 }
             }
         } catch (SQLException ex) {
             throw new RuntimeException("Lỗi khi lưu user", ex);
         } finally {
             if (conn != null) {
-                conn.close(); // Đóng connection
+                conn.close();
             }
         }
     }
@@ -143,31 +141,28 @@ public class UserDAOImpl implements UserDAO {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false);
 
-            // 1. Xóa user trong bảng user_roles trước
             try (PreparedStatement statement = conn.prepareStatement(SqlConstants.DELETE_USER_ROLES_SQL)) {
                 statement.setInt(1, userId);
                 statement.executeUpdate();
             }
 
-            // 2. Xóa user trong bảng users
             try (PreparedStatement deleteStmt = conn.prepareStatement(SqlConstants.DELETE_USER)) {
                 deleteStmt.setInt(1, userId);
                 deleteStmt.executeUpdate();
             }
 
-            // Commit nếu mọi thứ thành công
             conn.commit();
         } catch (SQLException ex) {
             if (conn != null) {
-                conn.rollback(); // Rollback nếu có lỗi
+                conn.rollback();
             }
             throw ex;
         } finally {
             if (conn != null) {
                 try {
-                    conn.setAutoCommit(true); // Trả lại trạng thái ban đầu
+                    conn.setAutoCommit(true);
                     conn.close(); // Đóng connection
                 } catch (SQLException e) {
                     e.printStackTrace();

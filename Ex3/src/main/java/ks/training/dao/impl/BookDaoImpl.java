@@ -36,7 +36,7 @@ public class BookDaoImpl implements BookDAO {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false);
 
             if (isBookIdExisted(book.getName(), book.getAuthor())) {
                 updateQuantity(book.getName(), book.getQuantity(), book.getAuthor());
@@ -49,17 +49,17 @@ public class BookDaoImpl implements BookDAO {
                 }
             }
 
-            conn.commit(); // Commit nếu không có lỗi
+            conn.commit();
         } catch (SQLException e) {
             if (conn != null) {
-                conn.rollback(); // Rollback nếu có lỗi
+                conn.rollback();
             }
             throw e;
         } finally {
             if (conn != null) {
                 try {
-                    conn.setAutoCommit(true); // Trả lại trạng thái mặc định
-                    conn.close(); // Đóng connection
+                    conn.setAutoCommit(true);
+                    conn.close();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
