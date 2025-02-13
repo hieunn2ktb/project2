@@ -2,7 +2,6 @@ package ks.training.dao.impl;
 
 import ks.training.commom.SqlConstants;
 import ks.training.dao.UserDAO;
-import ks.training.model.Book;
 import ks.training.model.User;
 import ks.training.util.DatabaseConnection;
 
@@ -14,17 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
-
-    public boolean isUserExisted(String username,String password) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.COUNT_USER)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
-            }
-        }
-    }
 
     public int findIDUser(String username,String password) throws SQLException {
         int id = 0;
@@ -57,40 +45,65 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public String save(User user) throws SQLException {
-        int result = 0;
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT_USER, PreparedStatement.RETURN_GENERATED_KEYS);
-             PreparedStatement roleStmt = conn.prepareStatement(SqlConstants.GET_ROLE_STUDENT);
-             PreparedStatement userRoleStmt = conn.prepareStatement(SqlConstants.INSERT_USER_ROLE)) {
+    public void save(User user) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
 
-            pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword());
-            result = pstmt.executeUpdate(); // Gọi trước khi lấy ID
+            try (PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT_USER, PreparedStatement.RETURN_GENERATED_KEYS);
+                 PreparedStatement roleStmt = conn.prepareStatement(SqlConstants.GET_ROLE_STUDENT);
+                 PreparedStatement userRoleStmt = conn.prepareStatement(SqlConstants.INSERT_USER_ROLE)) {
 
-            int userId = -1;
-            try (ResultSet userRs = pstmt.getGeneratedKeys()) {
-                if (userRs.next()) {
-                    userId = userRs.getInt(1);
+                // Thêm user vào database
+                pstmt.setString(1, user.getUsername());
+                pstmt.setString(2, user.getPassword());
+                pstmt.executeUpdate(); // Quan trọng: phải gọi executeUpdate() trước khi lấy ID
+
+                // Lấy ID của user vừa tạo
+                int userId = -1;
+                try (ResultSet userRs = pstmt.getGeneratedKeys()) {
+                    if (userRs.next()) {
+                        userId = userRs.getInt(1);
+                    }
+                }
+
+                // Lấy role ID
+                int roleId = -1;
+                try (ResultSet roleResult = roleStmt.executeQuery()) {
+                    if (roleResult.next()) {
+                        roleId = roleResult.getInt("id");
+                    }
+                }
+
+                // Thêm user_role nếu userId và roleId hợp lệ
+                if (userId != -1 && roleId != -1) {
+                    userRoleStmt.setInt(1, userId);
+                    userRoleStmt.setInt(2, roleId);
+                    userRoleStmt.executeUpdate();
+                }
+
+                // Commit transaction nếu mọi thứ thành công
+                conn.commit();
+            } catch (SQLException ex) {
+                if (conn != null) {
+                    conn.rollback(); // Rollback nếu có lỗi
+                }
+                throw ex;
+            } finally {
+                if (conn != null) {
+                    conn.setAutoCommit(true); // Trả lại trạng thái ban đầu
                 }
             }
-
-            int roleId = -1;
-            try (ResultSet roleResult = roleStmt.executeQuery()) {
-                if (roleResult.next()) {
-                    roleId = roleResult.getInt("id");
-                }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi khi lưu user", ex);
+        } finally {
+            if (conn != null) {
+                conn.close(); // Đóng connection
             }
-
-            if (userId != -1 && roleId != -1) {
-                userRoleStmt.setInt(1, userId);
-                userRoleStmt.setInt(2, roleId);
-                userRoleStmt.executeUpdate();
-            }
-
         }
-        return (result > 0 ? "Success" : "Failed");
     }
+
 
     @Override
     public List<User> findAll() throws SQLException {
@@ -127,9 +140,12 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void delete(int userId) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             ) {
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
 
+            // 1. Xóa user trong bảng user_roles trước
             try (PreparedStatement statement = conn.prepareStatement(SqlConstants.DELETE_USER_ROLES_SQL)) {
                 statement.setInt(1, userId);
                 statement.executeUpdate();
@@ -140,7 +156,24 @@ public class UserDAOImpl implements UserDAO {
                 deleteStmt.setInt(1, userId);
                 deleteStmt.executeUpdate();
             }
-        }
 
+            // Commit nếu mọi thứ thành công
+            conn.commit();
+        } catch (SQLException ex) {
+            if (conn != null) {
+                conn.rollback(); // Rollback nếu có lỗi
+            }
+            throw ex;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true); // Trả lại trạng thái ban đầu
+                    conn.close(); // Đóng connection
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
+
 }

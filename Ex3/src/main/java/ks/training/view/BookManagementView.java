@@ -1,16 +1,10 @@
 package ks.training.view;
-
 import ks.training.controller.BookManagementController;
-import ks.training.dao.UserDAO;
-import ks.training.dao.impl.UserDAOImpl;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ks.training.model.Book;
-import ks.training.model.User;
 import ks.training.service.BookManagement;
-
 import javax.swing.*;
-import java.awt.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.Font;
@@ -36,123 +30,17 @@ public class BookManagementView extends JFrame {
     private int currentPage = 1;
     private final int itemsPerPage = 15;
     private DefaultTableModel model;
-    private UserDAO userDAO;
-    private String currentUser;
     private int userId;
+    private String currentUser;
 
 
 
-    public BookManagementView() {
+    public BookManagementView(int userId,String currentUser) {
         this.bookManagement = new BookManagement();
-        this.userDAO = new UserDAOImpl();
-        showLoginScreen();
+        this.userId = userId;
+        this.currentUser = currentUser;
+        init();
     }
-
-    public void showLoginScreen() {
-        JFrame loginFrame = new JFrame("Login");
-        loginFrame.setSize(300, 250);
-        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel panel = new JPanel();
-        loginFrame.add(panel);
-        placeLoginComponents(panel, loginFrame);
-
-        loginFrame.setVisible(true);
-    }
-
-    private void placeLoginComponents(JPanel panel, JFrame loginFrame) {
-        panel.setLayout(new GridLayout(4, 2));
-
-        JLabel userLabel = new JLabel("User:");
-        JTextField userText = new JTextField(20);
-        JLabel passwordLabel = new JLabel("Password:");
-        JPasswordField passwordText = new JPasswordField(20);
-        JButton loginButton = new JButton("Login");
-        JButton registerButton = new JButton("Register");
-
-        panel.add(userLabel);
-        panel.add(userText);
-        panel.add(passwordLabel);
-        panel.add(passwordText);
-        panel.add(loginButton);
-        panel.add(registerButton);
-
-
-        loginButton.addActionListener(e -> {
-            String username = userText.getText();
-            String password = new String(passwordText.getPassword());
-            try {
-                if (userDAO.isUserExisted(username, password)) {
-                    userId = userDAO.findIDUser(username,password);
-                    if (userDAO.isAdmin(username)) {
-                        this.currentUser = "Admin";
-                    }else{
-                        this.currentUser = "Student";
-                    }
-                    loginFrame.dispose();
-                    init();
-                } else {
-                    JOptionPane.showMessageDialog(loginFrame, "Invalid credentials", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        registerButton.addActionListener(e -> showRegisterScreen());
-    }
-    public int getUserId() {
-        return userId;
-    }
-    private void showRegisterScreen() {
-        JFrame registerFrame = new JFrame("Register");
-        registerFrame.setSize(300, 200);
-
-        JPanel panel = new JPanel(new GridLayout(4, 2));
-
-        JLabel userLabel = new JLabel("User:");
-        JTextField userText = new JTextField(20);
-        JLabel passwordLabel = new JLabel("Password:");
-        JPasswordField passwordText = new JPasswordField(20);
-        JButton registerButton = new JButton("Register");
-        JLabel RePasswordLabel = new JLabel("Re-Password:");
-        JPasswordField RePasswordText = new JPasswordField(20);
-
-        panel.add(userLabel);
-        panel.add(userText);
-        panel.add(passwordLabel);
-        panel.add(passwordText);
-        panel.add(RePasswordLabel);
-        panel.add(RePasswordText);
-        panel.add(registerButton);
-
-        registerButton.addActionListener(e -> {
-            String username = userText.getText();
-            String password = new String(passwordText.getPassword());
-            String rePassword = new String(RePasswordText.getPassword());
-            if (username.isEmpty() || password.isEmpty() || rePassword.isEmpty()) {
-                JOptionPane.showMessageDialog(registerFrame, "Username and password cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            try {
-                if (password.equals(rePassword)) {
-                    userDAO.save(new User(username, password));
-                    JOptionPane.showMessageDialog(registerFrame, "Registration Successful", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    registerFrame.dispose();
-                }else{
-                    JOptionPane.showMessageDialog(registerFrame, "Password and Re-Password must be same!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-
-        });
-
-        registerFrame.add(panel);
-        registerFrame.setVisible(true);
-    }
-
-
 
     private void init() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -170,7 +58,7 @@ public class BookManagementView extends JFrame {
         mnNewMenu.add(mntmNewMenuItem);
         mntmNewMenuItem.addActionListener(e -> {
             this.dispose();
-            showLoginScreen();
+            new LoginView();
         });
 
 
@@ -185,9 +73,6 @@ public class BookManagementView extends JFrame {
                 new UserManagementView();
             }
         });
-
-
-
         getContentPane().setLayout(null);
 
 
@@ -343,7 +228,7 @@ public class BookManagementView extends JFrame {
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 String filePath = fileChooser.getSelectedFile().getAbsolutePath();
                 if (!filePath.endsWith(".xlsx")) {
-                    filePath += ".xlsx"; // Đảm bảo file có đuôi .xlsx
+                    filePath += ".xlsx";
                 }
                 exportToExcel(table, filePath);
             }

@@ -11,14 +11,6 @@ public class BorrowDetail {
     private String author;
     private LocalDate borrowDate;
     private LocalDate returnDate;
-    //  rs.getInt("id"),
-    //                       rs.getInt("id"),
-    //                        rs.getInt("user_id"),
-    //                        rs.getString("user_name"),
-    //                        rs.getInt("book_id"),
-    //                        rs.getString("book_name"),
-    //                        rs.getDate("borrow_date").toLocalDate(),
-    //                        rs.getDate("return_date").toLocalDate()
 
 
     public BorrowDetail(int borrowId, int userId, String userName, int bookId, String bookName, LocalDate borrowDate, LocalDate returnDate) {

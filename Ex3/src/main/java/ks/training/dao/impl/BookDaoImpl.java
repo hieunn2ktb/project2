@@ -7,7 +7,6 @@ import ks.training.exception.RecordNotFoundException;
 import ks.training.model.Book;
 import ks.training.util.DatabaseConnection;
 
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,24 +32,41 @@ public class BookDaoImpl implements BookDAO {
     }
 
     @Override
-    public String save(Book book) throws SQLException {
-        int result = 0;
-        if (isBookIdExisted(book.getName(), book.getAuthor())) {
-            updateQuantity(book.getName(), book.getQuantity(), book.getAuthor());
-        } else {
-            try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT)) {
-                pstmt.setString(1, book.getName());
-                pstmt.setString(2, book.getAuthor());
-                pstmt.setFloat(3, book.getQuantity());
-                result = pstmt.executeUpdate();
-            } catch (SQLException e) {
+    public void save(Book book) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
 
-                e.printStackTrace();
+            if (isBookIdExisted(book.getName(), book.getAuthor())) {
+                updateQuantity(book.getName(), book.getQuantity(), book.getAuthor());
+            } else {
+                try (PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT)) {
+                    pstmt.setString(1, book.getName());
+                    pstmt.setString(2, book.getAuthor());
+                    pstmt.setFloat(3, book.getQuantity());
+                    pstmt.executeUpdate();
+                }
+            }
+
+            conn.commit(); // Commit nếu không có lỗi
+        } catch (SQLException e) {
+            if (conn != null) {
+                conn.rollback(); // Rollback nếu có lỗi
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true); // Trả lại trạng thái mặc định
+                    conn.close(); // Đóng connection
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
-        return (result > 0 ? "Success" : "Failed");
     }
+
 
 
     private void updateQuantity(String name, int additionalQuantity, String author) {
@@ -127,17 +143,40 @@ public class BookDaoImpl implements BookDAO {
     }
 
     @Override
-    public String delete(Book book) throws SQLException {
-        int result = 0;
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.DELETE)) {
-            pstmt.setInt(1, book.getId());
-            result = pstmt.executeUpdate();
+    public void delete(Book book) throws SQLException {
+        Connection conn = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement pstmt = conn.prepareStatement(SqlConstants.DELETE)) {
+                pstmt.setInt(1, book.getId());
+                int result = pstmt.executeUpdate();
+
+                if (result == 0) {
+                    throw new SQLException("Không tìm thấy sách để xóa.");
+                }
+            }
+
+            conn.commit();
         } catch (SQLException e) {
+            if (conn != null) {
+                conn.rollback();
+            }
             e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
-        return (result > 0 ? "Success" : "Failed");
     }
+
 
     @Override
     public List<Book> findAll() throws SQLException {

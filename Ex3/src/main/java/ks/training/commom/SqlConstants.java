@@ -5,7 +5,7 @@ public class SqlConstants {
     public static final String COUNT_BOOK = "SELECT COUNT(*) from book where name = ? and author = ?";
     public static final String UPDATE_QUANTITY = "UPDATE book SET quantity = quantity + ? WHERE id = ?";
     public static final String SELECT_ID_UPDATE_QUANTITY = "SELECT id FROM book WHERE name = ? AND author = ? LIMIT 1";
-    public static final String DELETE = "DELETE FROM book WHERE id = ? AND status = 0";
+    public static final String DELETE = "DELETE FROM book WHERE id = ?";
     public static final String SHOW_BOOK_BY_NAME_AND_AUTHOR = "SELECT * FROM book WHERE name = ? and author = ?";
     public static final String SHOW_BOOK_BY_NAME = "SELECT * FROM book WHERE name = ?";
     public static final String COUNT_USER = "SELECT COUNT(id) FROM users WHERE username = ? and password = ?;";

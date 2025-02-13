@@ -49,17 +49,6 @@ public class UserReturnBookView extends JFrame {
 
         menuBar.add(mnNewMenu);
 
-        JMenuItem mntmNewMenuItem = new JMenuItem("Logout");
-        mnNewMenu.add(mntmNewMenuItem);
-
-        JMenuItem mntmMenuItemBook = new JMenuItem("Book");
-        mnNewMenu.add(mntmMenuItemBook);
-
-        JMenuItem mntmMenuItemBrou = new JMenuItem("Book Management");
-        mnNewMenu.add(mntmMenuItemBrou);
-
-        JMenuItem mntmNewMenuItem_1 = new JMenuItem("User");
-        mnNewMenu.add(mntmNewMenuItem_1);
         getContentPane().setLayout(null);
 
         JLabel labelListBookBorrow = new JLabel("Sách đã được mượn");

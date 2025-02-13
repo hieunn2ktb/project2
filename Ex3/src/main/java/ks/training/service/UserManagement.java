@@ -23,5 +23,13 @@ public class UserManagement {
     public boolean isUserBorrowingBook(int userId){
         return userDAO.isUserBorrowingBook(userId);
     }
-
+    public int findIDUser(String username,String password) throws SQLException {
+        return userDAO.findIDUser(username,password);
+    };
+    public boolean isAdmin(String username) throws SQLException {
+        return userDAO.isAdmin(username);
+    };
+    public void save(User user) throws SQLException {
+        userDAO.save(user);
+    }
 }

@@ -26,8 +26,8 @@ public class BookManagement {
         return bookDAO.findAll();
     }
 
-    public String deleteBook(Book book) throws SQLException {
-        return bookDAO.delete(book);
+    public void deleteBook(Book book) throws SQLException {
+        bookDAO.delete(book);
     }
     public List<Book> searchBookByName(String name) throws SQLException {
         return bookDAO.findByName(name);

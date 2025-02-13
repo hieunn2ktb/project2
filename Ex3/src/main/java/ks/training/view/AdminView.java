@@ -28,7 +28,6 @@ public class AdminView extends JFrame {
     public AdminManagement adminManagement;
     public int currentPage = 1;
     public int itemsPerPage = 15;
-    private JDatePickerImpl datePickerStart, datePickerEnd;
 
 
     public AdminView() {

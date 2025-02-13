@@ -4,7 +4,6 @@ import ks.training.commom.SqlConstants;
 import ks.training.dao.BorrowDao;
 import ks.training.exception.RecordNotFoundException;
 import ks.training.model.Book;
-import ks.training.model.Borrow;
 import ks.training.model.BorrowDetail;
 import ks.training.util.DatabaseConnection;
 
@@ -71,28 +70,50 @@ public class BorrowDaoImpl implements BorrowDao {
             }
         }
     }
-    public boolean returnBook(int userId, int bookId) throws SQLException {
-        Connection conn = DatabaseConnection.getConnection();
-        String returnSQL = "UPDATE borrow SET return_date = CURDATE() WHERE user_id = ? AND book_id = ? AND return_date IS NULL ORDER BY borrow_date ASC LIMIT 1";
-        String updateBookSQL = "UPDATE book SET quantity = quantity + 1 WHERE id = ?";
+    public void returnBook(int userId, int bookId) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
 
-        try (PreparedStatement returnStmt = conn.prepareStatement(returnSQL);
-             PreparedStatement updateStmt = conn.prepareStatement(updateBookSQL)) {
+            String returnSQL = "UPDATE borrow SET return_date = CURDATE() WHERE user_id = ? AND book_id = ? AND return_date IS NULL ORDER BY borrow_date ASC LIMIT 1";
+            String updateBookSQL = "UPDATE book SET quantity = quantity + 1 WHERE id = ?";
 
-            returnStmt.setInt(1, userId);
-            returnStmt.setInt(2, bookId);
-            int rowsAffected = returnStmt.executeUpdate();
+            try (PreparedStatement returnStmt = conn.prepareStatement(returnSQL);
+                 PreparedStatement updateStmt = conn.prepareStatement(updateBookSQL)) {
 
-            if (rowsAffected > 0) {
-                updateStmt.setInt(1, bookId);
-                updateStmt.executeUpdate();
-                return true;
-            } else {
-                System.out.println("Không tìm thấy bản ghi mượn sách.");
-                return false;
+                // Cập nhật ngày trả sách trong bảng borrow
+                returnStmt.setInt(1, userId);
+                returnStmt.setInt(2, bookId);
+                int rowsAffected = returnStmt.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    // Nếu có bản ghi được cập nhật, tăng số lượng sách trong bảng book
+                    updateStmt.setInt(1, bookId);
+                    updateStmt.executeUpdate();
+                    conn.commit(); // Commit nếu thành công
+                } else {
+                    System.out.println("Không tìm thấy bản ghi mượn sách.");
+                    conn.rollback(); // Rollback nếu không tìm thấy bản ghi
+                }
+            }
+        } catch (SQLException ex) {
+            if (conn != null) {
+                conn.rollback(); // Rollback nếu có lỗi
+            }
+            throw ex;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true); // Trả lại trạng thái mặc định
+                    conn.close(); // Đóng connection
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
+
     public List<BorrowDetail> getBooksBeingBorrowed() throws SQLException {
         List<BorrowDetail> borrowDetails = new ArrayList<>();
         String query = "SELECT b.id AS borrow_id, u.id AS user_id, u.username AS user_name, " +
