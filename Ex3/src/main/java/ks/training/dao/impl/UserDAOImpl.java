@@ -4,6 +4,7 @@ import ks.training.commom.SqlConstants;
 import ks.training.dao.UserDAO;
 import ks.training.model.User;
 import ks.training.util.DatabaseConnection;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,19 +15,30 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
+
+
     public int findIDUser(String username, String password) throws SQLException {
-        int id = 0;
+        int id = -1;
+        String storedHash = null;
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SqlConstants.FIND_USER)) {
+             PreparedStatement pstmt = conn.prepareStatement("SELECT id, password FROM users WHERE username = ?")) {
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
             ResultSet rs = pstmt.executeQuery();
+
             if (rs.next()) {
-                id = rs.getInt(1);
+                id = rs.getInt("id");
+                storedHash = rs.getString("password");
             }
         }
-        return id;
+
+        if (storedHash != null && BCrypt.checkpw(password, storedHash)) {
+            return id;
+        } else {
+            return -1;
+        }
     }
+
 
     public boolean isAdmin(String username) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
