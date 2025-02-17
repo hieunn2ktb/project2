@@ -70,6 +70,8 @@ public class BookManagementController implements Action {
             }
         } else if (action.equals("Trả Sách")) {
             this.bookManagementView.actionPerformed();
+        } else if (action.equals("Xuất File Excel")) {
+            this.bookManagementView.exportExcel();
         }
 
     }

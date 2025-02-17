@@ -3,6 +3,7 @@ package ks.training.dao;
 import ks.training.model.Book;
 import ks.training.model.BorrowDetail;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 public interface BorrowDao {
     boolean borrowBook(int userId, int bookId) throws SQLException;
 
-    void returnBook(int userId, int bookId) throws SQLException;
+    void returnBook(Connection connection, int userId, int bookId) throws SQLException;
 
     List<BorrowDetail> getBooksBeingBorrowed() throws SQLException;
 

@@ -45,63 +45,36 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void save(User user) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+    public void save(Connection conn, User user) throws SQLException {
+        try (PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT_USER, PreparedStatement.RETURN_GENERATED_KEYS);
+             PreparedStatement roleStmt = conn.prepareStatement(SqlConstants.GET_ROLE_STUDENT);
+             PreparedStatement userRoleStmt = conn.prepareStatement(SqlConstants.INSERT_USER_ROLE)) {
 
-            try (PreparedStatement pstmt = conn.prepareStatement(SqlConstants.INSERT_USER, PreparedStatement.RETURN_GENERATED_KEYS);
-                 PreparedStatement roleStmt = conn.prepareStatement(SqlConstants.GET_ROLE_STUDENT);
-                 PreparedStatement userRoleStmt = conn.prepareStatement(SqlConstants.INSERT_USER_ROLE)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.executeUpdate();
 
-                pstmt.setString(1, user.getUsername());
-                pstmt.setString(2, user.getPassword());
-                pstmt.executeUpdate(); // Quan trọng: phải gọi executeUpdate() trước khi lấy ID
-
-                int userId = -1;
-                try (ResultSet userRs = pstmt.getGeneratedKeys()) {
-                    if (userRs.next()) {
-                        userId = userRs.getInt(1);
-                    }
-                }
-
-
-                int roleId = -1;
-                try (ResultSet roleResult = roleStmt.executeQuery()) {
-                    if (roleResult.next()) {
-                        roleId = roleResult.getInt("id");
-                    }
-                }
-
-
-                if (userId != -1 && roleId != -1) {
-                    userRoleStmt.setInt(1, userId);
-                    userRoleStmt.setInt(2, roleId);
-                    userRoleStmt.executeUpdate();
-                }
-
-
-                conn.commit();
-            } catch (SQLException ex) {
-                if (conn != null) {
-                    conn.rollback();
-                }
-                throw ex;
-            } finally {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
+            int userId = -1;
+            try (ResultSet userRs = pstmt.getGeneratedKeys()) {
+                if (userRs.next()) {
+                    userId = userRs.getInt(1);
                 }
             }
-        } catch (SQLException ex) {
-            throw new RuntimeException("Lỗi khi lưu user", ex);
-        } finally {
-            if (conn != null) {
-                conn.close();
+
+            int roleId = -1;
+            try (ResultSet roleResult = roleStmt.executeQuery()) {
+                if (roleResult.next()) {
+                    roleId = roleResult.getInt("id");
+                }
+            }
+
+            if (userId != -1 && roleId != -1) {
+                userRoleStmt.setInt(1, userId);
+                userRoleStmt.setInt(2, roleId);
+                userRoleStmt.executeUpdate();
             }
         }
     }
-
 
     @Override
     public List<User> findAll() throws SQLException {
@@ -137,37 +110,10 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void delete(int userId) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false);
-
-            try (PreparedStatement statement = conn.prepareStatement(SqlConstants.DELETE_USER_ROLES_SQL)) {
-                statement.setInt(1, userId);
-                statement.executeUpdate();
-            }
-
-            try (PreparedStatement deleteStmt = conn.prepareStatement(SqlConstants.DELETE_USER)) {
-                deleteStmt.setInt(1, userId);
-                deleteStmt.executeUpdate();
-            }
-
-            conn.commit();
-        } catch (SQLException ex) {
-            if (conn != null) {
-                conn.rollback();
-            }
-            throw ex;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close(); // Đóng connection
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+    public void delete(Connection conn, int id) throws SQLException {
+        try (PreparedStatement pstmt = conn.prepareStatement(SqlConstants.DELETE_USER)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
         }
     }
 

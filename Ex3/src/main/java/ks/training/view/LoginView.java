@@ -7,6 +7,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class LoginView extends JFrame {
 
@@ -99,8 +100,8 @@ public class LoginView extends JFrame {
 
         registerButton.addActionListener(e -> {
             String username = userText.getText();
-            String password = new String(passwordText.getPassword());
-            String rePassword = new String(RePasswordText.getPassword());
+            String password = String.valueOf(passwordText.getPassword());
+            String rePassword = String.valueOf(RePasswordText.getPassword());
             if (username.isEmpty() || password.isEmpty() || rePassword.isEmpty()) {
                 JOptionPane.showMessageDialog(registerFrame, "Username and password cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;

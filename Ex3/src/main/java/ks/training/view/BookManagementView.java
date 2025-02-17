@@ -1,9 +1,11 @@
 package ks.training.view;
+
 import ks.training.controller.BookManagementController;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ks.training.model.Book;
 import ks.training.service.BookManagement;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -34,8 +36,7 @@ public class BookManagementView extends JFrame {
     private String currentUser;
 
 
-
-    public BookManagementView(int userId,String currentUser) {
+    public BookManagementView(int userId, String currentUser) {
         this.bookManagement = new BookManagement();
         this.userId = userId;
         this.currentUser = currentUser;
@@ -63,7 +64,7 @@ public class BookManagementView extends JFrame {
 
 
         JMenuItem mntmMenuItemBrou = new JMenuItem("Admin");
-        if (!"Admin".equals(currentUser)){
+        if (!"Admin".equals(currentUser)) {
             mntmMenuItemBrou.setVisible(false);
         }
         mnNewMenu.add(mntmMenuItemBrou);
@@ -219,20 +220,6 @@ public class BookManagementView extends JFrame {
         btnExportFileExcel.setFont(new Font("Tahoma", Font.PLAIN, 15));
         btnExportFileExcel.setBounds(32, 595, 172, 46);
         getContentPane().add(btnExportFileExcel);
-        btnExportFileExcel.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
-            fileChooser.setSelectedFile(new File("danh_sach_muon_sach.xlsx"));
-
-            int userSelection = fileChooser.showSaveDialog(null);
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-                if (!filePath.endsWith(".xlsx")) {
-                    filePath += ".xlsx";
-                }
-                exportToExcel(table, filePath);
-            }
-        });
 
         try {
             updateTable();
@@ -253,7 +240,7 @@ public class BookManagementView extends JFrame {
                 return;
             }
             int quantity = Integer.parseInt(result);
-            Book book = new Book(name,author,quantity);
+            Book book = new Book(name, author, quantity);
             bookManagement.addBook(book);
             updateTable();
             JOptionPane.showMessageDialog(null, "Add book successfully!");
@@ -350,16 +337,33 @@ public class BookManagementView extends JFrame {
     public void borrowBook() throws SQLException {
         int number = JOptionPane.showConfirmDialog(this, "Ấn 'Yes' để mượn sách");
         if (number == JOptionPane.YES_OPTION) {
-           boolean result = this.bookManagement.borrowBook(userId,getBook().getId());
+            boolean result = this.bookManagement.borrowBook(userId, getBook().getId());
             updateTable();
-            if(!result){
+            if (!result) {
                 JOptionPane.showMessageDialog(null, "Sách không còn sẵn có để mượn.");
             }
 
         }
     }
+
     public void actionPerformed() {
         new UserReturnBookView(userId).setVisible(true);
+    }
+
+
+    public void exportExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+        fileChooser.setSelectedFile(new File("danh_sach_muon_sach.xlsx"));
+
+        int userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+            if (!filePath.endsWith(".xlsx")) {
+                filePath += ".xlsx";
+            }
+            exportToExcel(table, filePath);
+        }
     }
 
     public static void exportToExcel(JTable table, String filePath) {
@@ -390,5 +394,4 @@ public class BookManagementView extends JFrame {
             JOptionPane.showMessageDialog(null, "Lỗi khi xuất file Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

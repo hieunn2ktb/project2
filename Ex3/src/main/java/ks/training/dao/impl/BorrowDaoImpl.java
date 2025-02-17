@@ -70,8 +70,8 @@ public class BorrowDaoImpl implements BorrowDao {
             }
         }
     }
-    public void returnBook(int userId, int bookId) throws SQLException {
-        Connection conn = null;
+    @Override
+    public void returnBook(Connection conn,int userId, int bookId) throws SQLException {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
@@ -104,7 +104,7 @@ public class BorrowDaoImpl implements BorrowDao {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
-                    conn.close(); // Đóng connection
+                    conn.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
